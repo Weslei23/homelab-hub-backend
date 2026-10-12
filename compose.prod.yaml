@@ -1,0 +1,38 @@
+# Usado pelo Jenkins para o deploy. Variaveis vem do ambiente do pipeline.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: homepage
+      POSTGRES_USER: homepage
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+    volumes:
+      - homepage-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homepage -d homepage"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    image: homepage-backend:${IMAGE_TAG:-latest}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/homepage
+      DB_USER: homepage
+      DB_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    ports:
+      # 8080 do host ja e usado pelo Jenkins
+      - "${HOST_PORT:-8081}:8080"
+    restart: unless-stopped
+
+volumes:
+  homepage-data:
