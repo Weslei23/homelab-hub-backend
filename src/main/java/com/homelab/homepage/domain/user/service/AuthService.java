@@ -1,11 +1,13 @@
 package com.homelab.homepage.domain.user.service;
 
 import com.homelab.homepage.common.config.TokenConfig;
+import com.homelab.homepage.common.exceptions.ConflictException;
 import com.homelab.homepage.domain.user.dto.request.LoginRequestDTO;
 import com.homelab.homepage.domain.user.dto.request.RegisterUserRequestDTO;
 import com.homelab.homepage.domain.user.dto.response.LoginResponseDTO;
 import com.homelab.homepage.domain.user.dto.response.RegisterUserResponseDTO;
 import com.homelab.homepage.domain.user.mapper.RegisterMapper;
+import com.homelab.homepage.domain.user.model.Role;
 import com.homelab.homepage.domain.user.model.User;
 import com.homelab.homepage.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +46,7 @@ public class AuthService
 
         String token = tokenConfig.getSecretKey( user );
 
-        return new LoginResponseDTO( token );
+        return new LoginResponseDTO( token, user.getUsername(), user.getEmail(), user.getRole() );
     }
 
     /**
@@ -54,7 +56,15 @@ public class AuthService
      */
     public RegisterUserResponseDTO register( RegisterUserRequestDTO registerUserRequestDTO )
     {
+        if ( userRepository.existsByEmail( registerUserRequestDTO.getEmail() ) )
+        {
+            throw new ConflictException( "E-mail ja cadastrado" );
+        }
+
         User newUser = RegisterMapper.dtoToEntity( registerUserRequestDTO );
+
+        // Cadastro publico sempre cria USER; ADMIN so e concedido por outro admin ou pelo admin inicial (ADMIN_EMAIL)
+        newUser.setRole( Role.USER );
 
         newUser.setPassword( passwordEncoder.encode( registerUserRequestDTO.getPassword() ) );
 

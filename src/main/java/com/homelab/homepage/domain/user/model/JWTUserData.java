@@ -9,4 +9,5 @@ public class JWTUserData
 {
     private Long userId;
     private String email;
+    private Role role;
 }

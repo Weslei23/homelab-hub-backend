@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
@@ -21,10 +22,22 @@ public class User implements UserDetails
     private String username;
     private String password;
 
+    @Enumerated( EnumType.STRING )
+    private Role role = Role.USER;
+
+    /**
+     * Usuarios criados antes da existencia de roles ficam com a coluna nula no banco;
+     * eles passam a ser tratados como USER.
+     */
+    public Role getRole()
+    {
+        return role == null ? Role.USER : role;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities()
     {
-        return List.of();
+        return List.of( new SimpleGrantedAuthority( "ROLE_" + getRole().name() ) );
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.homelab.homepage.common.config;
 
 import com.homelab.homepage.domain.user.model.JWTUserData;
+import com.homelab.homepage.domain.user.model.User;
+import com.homelab.homepage.domain.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,6 +11,7 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,6 +24,9 @@ public class SecurityFilter extends OncePerRequestFilter
     @Autowired
     private TokenConfig tokenConfig;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     protected void doFilterInternal( HttpServletRequest request, HttpServletResponse response, FilterChain filterChain ) throws ServletException, IOException
     {
@@ -30,22 +36,32 @@ public class SecurityFilter extends OncePerRequestFilter
         {
             String token = authorizedHeader.substring( "Bearer ".length() );
 
-            Optional<JWTUserData> optUser = tokenConfig.validateToken( token );
+            Optional<JWTUserData> optTokenData = tokenConfig.validateToken( token );
 
-            if ( optUser.isPresent() )
+            if ( optTokenData.isPresent() )
             {
-                JWTUserData user = optUser.get();
+                // A role vem sempre do banco (e nao do token): se o admin rebaixar ou remover
+                // um usuario, o efeito e imediato, sem esperar o token expirar.
+                Optional<UserDetails> optUserDetails = userRepository.findUserByEmail( optTokenData.get().getEmail() );
 
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken( user, null, java.util.Collections.emptyList() );
+                if ( optUserDetails.isPresent() )
+                {
+                    User user = (User) optUserDetails.get();
 
-                SecurityContextHolder.getContext().setAuthentication( authenticationToken );
+                    JWTUserData principal = JWTUserData.builder()
+                            .userId( user.getId() )
+                            .email( user.getEmail() )
+                            .role( user.getRole() )
+                            .build();
+
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken( principal, null, user.getAuthorities() );
+
+                    SecurityContextHolder.getContext().setAuthentication( authenticationToken );
+                }
             }
+        }
 
-            filterChain.doFilter( request, response );
-        }
-        else
-        {
-            filterChain.doFilter( request, response );
-        }
+        filterChain.doFilter( request, response );
     }
 }

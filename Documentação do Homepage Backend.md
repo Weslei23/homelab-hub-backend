@@ -19,7 +19,7 @@ O Homepage Backend é uma API REST que guarda no PostgreSQL as categorias e os c
 | Build | Maven (wrapper `mvnw` incluído) |
 | Porta padrão | 8080 (variável `PORT`) |
 
-A API não tem autenticação: ela foi pensada para rodar em rede local (homelab). Se for exposta fora dela, coloque um proxy reverso com autenticação na frente.
+O acesso é protegido por login (JWT) e por roles: `USER` só visualiza o catálogo e `ADMIN` também cria, edita e remove (ver seção 10).
 
 ## 2. Arquitetura e estrutura de packages
 
@@ -336,7 +336,7 @@ Para uma nova entidade, crie o `model`, o `repository`, os `dto`, o mapper e um 
 
 | Ponto | Efeito | Como tratar |
 | --- | --- | --- |
-| Sem autenticação | Qualquer cliente que alcance a API altera o catálogo. | Manter em rede local ou usar proxy reverso com autenticação. |
+| Token JWT sem logout no servidor | Um token roubado vale até expirar (24 h). | Trocar `JWT_SECRET` invalida todos; a role, porém, é sempre lida do banco. |
 | `ddl-auto: update` | O Hibernate altera o esquema sozinho, sem histórico de versões. | Adotar Flyway ou Liquibase se o esquema crescer. |
 | Credenciais padrão `homepage/homepage` | Fracas, e a porta 5432 do compose fica exposta. | Definir `DB_USER`, `DB_PASSWORD` e restringir a porta. |
 | Sem rota de reordenação | A ordem só é a de criação. | Adicionar rota que altere `position`. |
@@ -347,3 +347,67 @@ Para uma nova entidade, crie o `model`, o `repository`, os `dto`, o mapper e um 
 ### Observação sobre este documento
 
 O código foi refatorado para MVC sem mudar rotas, JSON nem tabelas, mas a compilação completa não pôde ser executada no ambiente em que a refatoração foi feita (sem acesso ao Maven Central). Rode `./mvnw clean package` uma vez para confirmar.
+
+## 10. Autenticação e controle de acesso (roles)
+
+### Roles
+
+| Role | Pode |
+| --- | --- |
+| `USER` | Fazer login e visualizar o catálogo (`GET /api/catalog`). Não edita nada. |
+| `ADMIN` | Tudo do `USER`, mais criar, editar e remover categorias e cards, e gerenciar usuários e roles. |
+
+O frontend também esconde os controles de edição e desativa o clique nos cards para `USER`, mas quem garante o bloqueio é o backend: uma chamada de escrita feita por um `USER` recebe `403`, mesmo fora da interface.
+
+### Como funciona
+
+1. `POST /api/v1/auth/login` valida e-mail e senha e devolve `{ token, username, email, role }`. O token é um JWT assinado (HS256) válido por 24 horas.
+2. O cliente envia `Authorization: Bearer <token>` nas demais chamadas.
+3. O `SecurityFilter` valida o token e **busca o usuário no banco** para obter a role atual. Assim, rebaixar ou apagar um usuário vale na próxima requisição, sem esperar o token expirar.
+4. O `SecurityConfig` aplica as regras por rota (tabela abaixo).
+
+### Regras de acesso por rota
+
+| Rota | Acesso |
+| --- | --- |
+| `POST /api/v1/auth/login`, `POST /api/v1/auth/register`, Swagger | Público |
+| `GET /api/catalog` | `USER` ou `ADMIN` |
+| `POST/PUT/DELETE /api/categories/**` e `/api/cards/**` | Somente `ADMIN` |
+| `GET /api/v1/users`, `PUT /api/v1/users/{id}/role` | Somente `ADMIN` |
+| Qualquer outra rota | Autenticado |
+
+### Códigos de resposta
+
+| Status | Quando | Corpo |
+| --- | --- | --- |
+| 401 | Sem token, token inválido ou expirado; ou e-mail/senha incorretos no login | `{ "message": "..." }` |
+| 403 | Logado, mas sem a role exigida | `{ "message": "Voce nao tem permissao para esta acao" }` |
+| 409 | E-mail já cadastrado; ou tentativa de remover o último administrador | `{ "message": "..." }` |
+
+### Cadastro e primeiro administrador
+
+- `POST /api/v1/auth/register` é público e **sempre cria `USER`**. Um campo `role` enviado no corpo é ignorado.
+- O primeiro `ADMIN` é definido por variáveis de ambiente, lidas pelo `AdminSeedLoader` a cada inicialização:
+  - `ADMIN_EMAIL` e `ADMIN_PASSWORD` (e opcionalmente `ADMIN_USERNAME`): se o e-mail não existe, o usuário é criado como `ADMIN`.
+  - Se o e-mail **já existe** (por exemplo, uma conta criada antes das roles), ele é promovido a `ADMIN` e a senha atual é mantida.
+- Usuários criados antes das roles (coluna `role` nula) são tratados como `USER`.
+
+### Gestão de usuários (somente ADMIN)
+
+| Método | Rota | Corpo | Resposta |
+| --- | --- | --- | --- |
+| GET | `/api/v1/users` | — | Lista de `{ id, username, email, role }` |
+| PUT | `/api/v1/users/{id}/role` | `{ "role": "ADMIN" }` ou `{ "role": "USER" }` | Usuário atualizado; `404` se não existir; `409` se deixaria o sistema sem administrador |
+
+### Novas variáveis de ambiente
+
+| Variável | Padrão | Para que serve |
+| --- | --- | --- |
+| `ADMIN_EMAIL` | vazio | E-mail do administrador inicial (criado ou promovido). |
+| `ADMIN_PASSWORD` | vazio | Senha usada somente se o administrador ainda não existir. |
+| `ADMIN_USERNAME` | `admin` | Nome do administrador criado. |
+| `JWT_SECRET` | `chave-temporaria-para-desenvolvimento` | Chave de assinatura dos tokens. **Troque em produção.** |
+
+### Classes novas ou alteradas
+
+`Role` (enum), `User` (campo `role` e autoridade `ROLE_<role>`), `SecurityFilter`, `SecurityConfig`, `AdminSeedLoader`, `UserController`, `UserService`, `UserMapper`, `UserResponseDTO`, `UpdateUserRoleRequestDTO`, `ConflictException`, `GlobalExceptionHandler` (409 e 401), `AuthService` (registro sempre `USER`, e-mail único) e `LoginResponseDTO` (agora com `username`, `email` e `role`).

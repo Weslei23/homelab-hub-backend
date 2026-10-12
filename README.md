@@ -14,7 +14,7 @@ As tabelas `catalog_category` e `catalog_card` sao criadas automaticamente. A AP
 
 | Metodo | Rota | Descricao |
 |--------|------|-----------|
-| GET | `/api/catalog` | Categorias com seus cards (`services`), na ordem de exibicao |
+| GET | `/api/catalog` | (USER/ADMIN) Categorias com seus cards (`services`), na ordem de exibicao |
 | POST | `/api/categories` | Cria categoria — `{ "label": "..." }` |
 | PUT | `/api/categories/{id}` | Renomeia categoria |
 | DELETE | `/api/categories/{id}` | Remove a categoria e seus cards |
@@ -27,9 +27,24 @@ As tabelas `catalog_category` e `catalog_card` sao criadas automaticamente. A AP
 Na primeira execucao (banco vazio) o catalogo padrao e carregado de `src/main/resources/seed-catalog.json`.
 Links salvos na versao anterior (tabela `service_link`) sao reaproveitados nesse momento.
 
+## Autenticacao e roles
+
+Login por JWT (`POST /api/v1/auth/login`) e duas roles:
+
+- `USER`: so visualiza o catalogo (`GET /api/catalog`).
+- `ADMIN`: tambem cria, edita e remove categorias e cards (`/api/categories/**`, `/api/cards/**`) e gerencia usuarios (`/api/v1/users`).
+
+O cadastro publico (`POST /api/v1/auth/register`) sempre cria `USER`. Para ter o primeiro admin, defina `ADMIN_EMAIL` e `ADMIN_PASSWORD` antes de subir: se o e-mail nao existe ele e criado; se ja existe (conta antiga) e promovido a `ADMIN`.
+
+```
+ADMIN_EMAIL=voce@exemplo.com ADMIN_PASSWORD=uma-senha-forte JWT_SECRET=troque-esta-chave mvn spring-boot:run
+```
+
+Detalhes na secao 10 de `Documentação do Homepage Backend.md`.
+
 ## Variaveis de ambiente
 
-`DB_URL`, `DB_USER`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`.
+`DB_URL`, `DB_USER`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_USERNAME`, `JWT_SECRET`.
 
 ## Estrutura (MVC)
 
