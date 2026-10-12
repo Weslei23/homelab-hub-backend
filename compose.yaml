@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: homepage-postgres
+    environment:
+      POSTGRES_DB: homepage
+      POSTGRES_USER: homepage
+      POSTGRES_PASSWORD: homepage
+    ports:
+      - "5432:5432"
+    volumes:
+      - homepage-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  homepage-data:

@@ -1,0 +1,193 @@
+[
+  {
+    "label": "Infraestrutura",
+    "services": [
+      {
+        "name": "TrueNAS",
+        "url": "#",
+        "icon": "truenas",
+        "description": "Armazenamento e gerenciamento de discos"
+      },
+      {
+        "name": "ZimaOS",
+        "url": "https://192.168.3.146/#/",
+        "icon": "zimaos",
+        "description": "Sistema operacional do ZimaBoard"
+      },
+      {
+        "name": "Proxmox",
+        "url": "#",
+        "icon": "proxmox",
+        "description": "Virtualizacao (VMs e LXC)"
+      },
+      {
+        "name": "Docker",
+        "url": "#",
+        "icon": "docker",
+        "description": "Motor de containers"
+      }
+    ]
+  },
+  {
+    "label": "Contêineres & Deploy",
+    "services": [
+      {
+        "name": "Portainer",
+        "url": "http://192.168.3.146:9000/#!/auth",
+        "icon": "portainer-dark",
+        "description": "Gerenciamento visual de containers"
+      },
+      {
+        "name": "Jenkins",
+        "url": "#",
+        "icon": "jenkins",
+        "description": "Automação de builds e pipelines"
+      },
+      {
+        "name": "CubeCoders AMP",
+        "url": "#",
+        "icon": "cubecoders-amp",
+        "description": "Gerenciamento de servidores de jogos"
+      },
+      {
+        "name": "Nginx Proxy Manager",
+        "url": "#",
+        "icon": "nginx-proxy-manager",
+        "description": "Proxy reverso e certificados SSL"
+      }
+    ]
+  },
+  {
+    "label": "Monitoramento",
+    "services": [
+      {
+        "name": "Grafana",
+        "url": "#",
+        "icon": "grafana",
+        "description": "Dashboards e métricas"
+      },
+      {
+        "name": "Prometheus",
+        "url": "#",
+        "icon": "prometheus",
+        "description": "Coleta de métricas"
+      },
+      {
+        "name": "Uptime Kuma",
+        "url": "#",
+        "icon": "uptime-kuma",
+        "description": "Monitor de disponibilidade"
+      }
+    ]
+  },
+  {
+    "label": "Rede & Segurança",
+    "services": [
+      {
+        "name": "Pi-hole",
+        "url": "#",
+        "icon": "pihole",
+        "description": "Bloqueio de anúncios via DNS"
+      },
+      {
+        "name": "WireGuard",
+        "url": "#",
+        "icon": "wireguard",
+        "description": "VPN"
+      },
+      {
+        "name": "Vaultwarden",
+        "url": "#",
+        "icon": "vaultwarden",
+        "description": "Cofre de senhas self-hosted"
+      },
+      {
+        "name": "AdGuard Home",
+        "url": "http://192.168.3.146:3001/",
+        "icon": "adguard-home",
+        "description": "Bloqueio de anúncios via DNS"
+      },
+      {
+        "name": "Tailscale",
+        "url": "http://192.168.3.146:5252/",
+        "icon": "tailscale-light",
+        "description": "VPN"
+      },
+      {
+        "name": "OpenSpeedTest",
+        "url": "http://192.168.3.146:3004/",
+        "icon": "openspeedtest",
+        "description": "Teste velocidade internet"
+      }
+    ]
+  },
+  {
+    "label": "Automação & Nuvem",
+    "services": [
+      {
+        "name": "Home Assistant",
+        "url": "http://192.168.3.146:8123/home/overview",
+        "icon": "home-assistant",
+        "description": "Automação residencial"
+      },
+      {
+        "name": "Nextcloud",
+        "url": "http://192.168.3.146:10081/login",
+        "icon": "nextcloud",
+        "description": "Nuvem pessoal de arquivos"
+      }
+    ]
+  },
+  {
+    "label": "Entretenimento & Mídia",
+    "services": [
+      {
+        "name": "Jellyfin",
+        "url": "http://192.168.3.146:8097/web/#/home",
+        "icon": "jellyfin",
+        "description": "Player de filmes e séries"
+      },
+      {
+        "name": "Navidrome",
+        "url": "http://192.168.3.146:4533/app/#/login",
+        "icon": "navidrome",
+        "description": "Player de musicas"
+      },
+      {
+        "name": "Immich",
+        "url": "http://192.168.3.146:2283/auth/login",
+        "icon": "immich",
+        "description": "Fotos e videos"
+      }
+    ]
+  },
+  {
+    "label": "Utilitários",
+    "services": [
+      {
+        "name": "Downtify",
+        "url": "http://192.168.3.146:8582/",
+        "icon": "downtify",
+        "description": "Download de músicas do Spotify"
+      },
+      {
+        "name": "MeTube",
+        "url": "http://192.168.3.146:8081/",
+        "icon": "metube",
+        "description": "Download de videos do Youtube"
+      },
+      {
+        "name": "Stirling-PDF",
+        "url": "http://192.168.3.146:8080/login",
+        "icon": "stirling-pdf",
+        "description": "Editor de PDFs"
+      },
+      {
+        "name": "Excalidraw",
+        "url": "http://192.168.3.146:17638/",
+        "icon": "excalidraw",
+        "description": "Quadro branco"
+      }
+    ]
+  }
+]
