@@ -14,7 +14,7 @@ pipeline {
         COMPOSE_PROJECT_NAME = 'homepage'
         HOST_PORT  = '8081'
         // Ajuste para a URL real do frontend
-        CORS_ALLOWED_ORIGINS = 'http://192.168.3.183:5173'
+        CORS_ALLOWED_ORIGINS = 'http://192.168.3.183:8082,http://192.168.3.183:5173'
         ADMIN_EMAIL = 'sschmittweslei@gmail.com'
         DOCKER_BUILDKIT = '1'
     }
