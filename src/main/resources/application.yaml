@@ -15,5 +15,7 @@ server:
 
 app:
   cors:
-    # Origens permitidas (separadas por virgula). Em dev o Vite usa proxy, entao nem e necessario.
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+security:
+  secret-key: "chave-temporaria-para-desenvolvimento"
