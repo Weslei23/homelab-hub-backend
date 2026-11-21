@@ -404,7 +404,7 @@ O frontend também esconde os controles de edição e desativa o clique nos card
 | Variável | Padrão | Para que serve |
 | --- | --- | --- |
 | `ADMIN_EMAIL` | vazio | E-mail do administrador inicial (criado ou promovido). |
-| `ADMIN_PASSWORD` | vazio | Senha usada somente se o administrador ainda não existir. |
+| `ADMIN_PASSWORD` | vazio | Senha do administrador. Cria o admin se ele não existir e, se já existir, substitui a senha dele a cada inicialização quando for diferente. Vazio = mantém a senha atual. |
 | `ADMIN_USERNAME` | `admin` | Nome do administrador criado. |
 | `JWT_SECRET` | `chave-temporaria-para-desenvolvimento` | Chave de assinatura dos tokens. **Troque em produção.** |
 

@@ -16,7 +16,9 @@ import java.util.Optional;
 /**
  * Garante o primeiro administrador a partir das variaveis ADMIN_EMAIL, ADMIN_PASSWORD e ADMIN_USERNAME.
  * - E-mail ainda nao cadastrado: cria o usuario como ADMIN (exige ADMIN_PASSWORD).
- * - E-mail ja cadastrado como USER: promove a ADMIN (a senha existente e mantida).
+ * - E-mail ja cadastrado: promove a ADMIN (se ainda nao for) e, se ADMIN_PASSWORD estiver definido
+ *   e for diferente da senha atual, troca a senha. Assim a credencial do Jenkins e a fonte da senha do admin.
+ * - ADMIN_PASSWORD vazio: a senha existente e mantida.
  * Sem ADMIN_EMAIL nada e alterado.
  */
 @Component
@@ -61,17 +63,28 @@ public class AdminSeedLoader implements ApplicationRunner
         if ( existingUser.isPresent() )
         {
             User user = existingUser.get();
+            boolean changed = false;
 
             if ( user.getRole() != Role.ADMIN )
             {
                 user.setRole( Role.ADMIN );
-                userRepository.save( user );
+                changed = true;
                 log.info( "Usuario {} promovido a ADMIN", email );
+            }
+            if ( hasPassword() && !passwordEncoder.matches( adminPassword, user.getPassword() ) )
+            {
+                user.setPassword( passwordEncoder.encode( adminPassword ) );
+                changed = true;
+                log.info( "Senha do administrador {} atualizada a partir de ADMIN_PASSWORD", email );
+            }
+            if ( changed )
+            {
+                userRepository.save( user );
             }
             return;
         }
 
-        if ( adminPassword == null || adminPassword.isBlank() )
+        if ( !hasPassword() )
         {
             log.warn( "ADMIN_EMAIL definido, mas {} nao existe e ADMIN_PASSWORD esta vazio: administrador nao criado.", email );
             return;
@@ -84,5 +97,10 @@ public class AdminSeedLoader implements ApplicationRunner
         admin.setRole( Role.ADMIN );
         userRepository.save( admin );
         log.info( "Administrador inicial {} criado", email );
+    }
+
+    private boolean hasPassword()
+    {
+        return adminPassword != null && !adminPassword.isBlank();
     }
 }

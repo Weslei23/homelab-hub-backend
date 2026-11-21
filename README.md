@@ -34,7 +34,7 @@ Login por JWT (`POST /api/v1/auth/login`) e duas roles:
 - `USER`: so visualiza o catalogo (`GET /api/catalog`).
 - `ADMIN`: tambem cria, edita e remove categorias e cards (`/api/categories/**`, `/api/cards/**`) e gerencia usuarios (`/api/v1/users`).
 
-O cadastro publico (`POST /api/v1/auth/register`) sempre cria `USER`. Para ter o primeiro admin, defina `ADMIN_EMAIL` e `ADMIN_PASSWORD` antes de subir: se o e-mail nao existe ele e criado; se ja existe (conta antiga) e promovido a `ADMIN`.
+O cadastro publico (`POST /api/v1/auth/register`) sempre cria `USER`. Para ter o primeiro admin, defina `ADMIN_EMAIL` e `ADMIN_PASSWORD` antes de subir: se o e-mail nao existe ele e criado; se ja existe (conta antiga) e promovido a `ADMIN`. A cada inicializacao, se `ADMIN_PASSWORD` estiver definido e for diferente da senha atual, a senha do admin e trocada: para mudar a senha, altere a credencial `homepage-admin-password` no Jenkins e faca o deploy.
 
 ```
 ADMIN_EMAIL=voce@exemplo.com ADMIN_PASSWORD=uma-senha-forte JWT_SECRET=troque-esta-chave mvn spring-boot:run

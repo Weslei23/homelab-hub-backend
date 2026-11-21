@@ -81,15 +81,62 @@ class AdminSeedLoaderTest
     }
 
     @Test
-    void adminExistenteNaoEAlterado()
+    void adminComAMesmaSenhaNaoEAlterado()
+    {
+        User ana = TestData.user( 1L, "ana@lab.local", Role.ADMIN );
+        when( userRepository.findByEmail( "ana@lab.local" ) ).thenReturn( Optional.of( ana ) );
+        when( passwordEncoder.matches( "senha-atual", "hash" ) ).thenReturn( true );
+
+        run( "ana@lab.local", "senha-atual" );
+
+        verify( userRepository, never() ).save( any() );
+        verify( passwordEncoder, never() ).encode( any() );
+    }
+
+    @Test
+    void senhaNovaNoAdminPasswordTrocaASenhaDoAdmin()
+    {
+        // Cenario real: a credencial homepage-admin-password foi alterada no Jenkins
+        User ana = TestData.user( 1L, "ana@lab.local", Role.ADMIN );
+        when( userRepository.findByEmail( "ana@lab.local" ) ).thenReturn( Optional.of( ana ) );
+        when( passwordEncoder.matches( "senha-nova", "hash" ) ).thenReturn( false );
+        when( passwordEncoder.encode( "senha-nova" ) ).thenReturn( "$2a$novo-hash" );
+
+        run( "ana@lab.local", "senha-nova" );
+
+        assertThat( ana.getPassword() ).isEqualTo( "$2a$novo-hash" );
+        assertThat( ana.getRole() ).isEqualTo( Role.ADMIN );
+        verify( userRepository ).save( ana );
+    }
+
+    @Test
+    void usuarioComumEPromovidoEGanhaASenhaNumaUnicaGravacao()
+    {
+        User bia = TestData.user( 2L, "bia@lab.local", Role.USER );
+        when( userRepository.findByEmail( "bia@lab.local" ) ).thenReturn( Optional.of( bia ) );
+        when( passwordEncoder.matches( "senha-nova", "hash" ) ).thenReturn( false );
+        when( passwordEncoder.encode( "senha-nova" ) ).thenReturn( "$2a$novo-hash" );
+
+        run( "bia@lab.local", "senha-nova" );
+
+        assertThat( bia.getRole() ).isEqualTo( Role.ADMIN );
+        assertThat( bia.getPassword() ).isEqualTo( "$2a$novo-hash" );
+        verify( userRepository, org.mockito.Mockito.times( 1 ) ).save( bia );
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource( strings = { "   " } )
+    void semAdminPasswordASenhaExistenteEMantida( String password )
     {
         User ana = TestData.user( 1L, "ana@lab.local", Role.ADMIN );
         when( userRepository.findByEmail( "ana@lab.local" ) ).thenReturn( Optional.of( ana ) );
 
-        run( "ana@lab.local", "nova-senha" );
+        run( "ana@lab.local", password );
 
+        assertThat( ana.getPassword() ).isEqualTo( "hash" );
+        verify( passwordEncoder, never() ).matches( any(), any() );
         verify( userRepository, never() ).save( any() );
-        verify( passwordEncoder, never() ).encode( any() );
     }
 
     @ParameterizedTest
