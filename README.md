@@ -46,6 +46,10 @@ Detalhes na secao 10 de `Documentação do Homepage Backend.md`.
 
 `DB_URL`, `DB_USER`, `DB_PASSWORD`, `PORT`, `CORS_ALLOWED_ORIGINS`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_USERNAME`, `JWT_SECRET`.
 
+Status online/offline e avisos no Discord: `STATUS_INTERVAL`, `STATUS_TIMEOUT`, `STATUS_INSECURE_TLS`, `DISCORD_WEBHOOK_URL`, `DISCORD_USERNAME`, `NOTIFY_FAILURE_THRESHOLD`. Passo a passo ilustrado em [docs/STATUS-E-AVISOS-DISCORD.md](docs/STATUS-E-AVISOS-DISCORD.md).
+
+Downloads de musica pelo Downtify: `DOWNTIFY_URL`, `DOWNTIFY_TOKEN`, `DOWNTIFY_SYNC_INTERVAL`, `DOWNTIFY_TIMEOUT`. Veja [docs/MUSICAS-DOWNTIFY.md](docs/MUSICAS-DOWNTIFY.md).
+
 ## Estrutura (MVC)
 
 ```

@@ -16,6 +16,8 @@ pipeline {
         // Ajuste para a URL real do frontend
         CORS_ALLOWED_ORIGINS = 'http://192.168.3.183:8082,http://192.168.3.183:5173'
         ADMIN_EMAIL = 'sschmittweslei@gmail.com'
+        // Downtify 3.x (downloads de musica) no ZimaOS. O token vem da credencial abaixo
+        DOWNTIFY_URL = 'http://192.168.3.182:8582'
         DOCKER_BUILDKIT = '1'
     }
 
@@ -39,7 +41,9 @@ pipeline {
                 withCredentials([
                     string(credentialsId: 'homepage-db-password',    variable: 'DB_PASSWORD'),
                     string(credentialsId: 'homepage-jwt-secret',     variable: 'JWT_SECRET'),
-                    string(credentialsId: 'homepage-admin-password', variable: 'ADMIN_PASSWORD')
+                    string(credentialsId: 'homepage-admin-password', variable: 'ADMIN_PASSWORD'),
+                    string(credentialsId: 'homepage-discord-webhook', variable: 'DISCORD_WEBHOOK_URL'),
+                    string(credentialsId: 'homepage-downtify-token',  variable: 'DOWNTIFY_TOKEN')
                 ]) {
                     sh 'docker compose -f compose.prod.yaml up -d --remove-orphans'
                 }

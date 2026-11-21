@@ -15,6 +15,7 @@ import com.homelab.homepage.domain.catalog.model.Card;
 import com.homelab.homepage.domain.catalog.model.Category;
 import com.homelab.homepage.domain.catalog.repository.CardRepository;
 import com.homelab.homepage.domain.catalog.repository.CategoryRepository;
+import com.homelab.homepage.domain.status.service.StatusService;
 
 @Service
 @Transactional
@@ -23,11 +24,13 @@ public class CatalogService
 
     private final CategoryRepository categoryRepository;
     private final CardRepository cardRepository;
+    private final StatusService statusService;
 
-    public CatalogService( CategoryRepository categoryRepository, CardRepository cardRepository )
+    public CatalogService( CategoryRepository categoryRepository, CardRepository cardRepository, StatusService statusService )
     {
         this.categoryRepository = categoryRepository;
         this.cardRepository = cardRepository;
+        this.statusService = statusService;
     }
 
     @Transactional( readOnly = true )
@@ -54,7 +57,9 @@ public class CatalogService
 
     public void deleteCategory( Long categoryId )
     {
-        categoryRepository.delete( findCategoryOrFail( categoryId ) );
+        Category category = findCategoryOrFail( categoryId );
+        category.getCards().forEach( card -> statusService.evict( card.getId() ) );
+        categoryRepository.delete( category );
     }
 
     public CardResponse createCard( Long categoryId, CardRequest request )
@@ -68,6 +73,7 @@ public class CatalogService
                 blankToNull( request.icon() ),
                 cardRepository.nextPosition( categoryId ) );
         Card savedCard = cardRepository.save( newCard );
+        statusService.checkSoon( savedCard.getId(), savedCard.getUrl() );
         return CatalogMapper.toResponse( savedCard );
     }
 
@@ -79,12 +85,14 @@ public class CatalogService
                 request.url().trim(),
                 blankToNull( request.description() ),
                 blankToNull( request.icon() ) );
+        statusService.checkSoon( card.getId(), card.getUrl() );
         return CatalogMapper.toResponse( card );
     }
 
     public void deleteCard( Long cardId )
     {
         cardRepository.delete( findCardOrFail( cardId ) );
+        statusService.evict( cardId );
     }
 
     private Category findCategoryOrFail( Long categoryId )

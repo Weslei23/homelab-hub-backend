@@ -1,5 +1,7 @@
 package com.homelab.homepage.common.exceptions;
 
+import com.homelab.homepage.domain.music.client.DowntifyException;
+
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
@@ -33,6 +35,19 @@ public class GlobalExceptionHandler
     public ResponseEntity<Map<String, String>> handleConflict( ConflictException exception )
     {
         return ResponseEntity.status( HttpStatus.CONFLICT ).body( Map.of( "message", exception.getMessage() ) );
+    }
+
+    @ExceptionHandler( BadRequestException.class )
+    public ResponseEntity<Map<String, String>> handleBadRequest( BadRequestException exception )
+    {
+        return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( Map.of( "message", exception.getMessage() ) );
+    }
+
+    /** Falha num servico externo (Downtify): o problema nao e do dashboard nem do pedido. */
+    @ExceptionHandler( DowntifyException.class )
+    public ResponseEntity<Map<String, String>> handleDowntify( DowntifyException exception )
+    {
+        return ResponseEntity.status( HttpStatus.BAD_GATEWAY ).body( Map.of( "message", exception.getMessage() ) );
     }
 
     /** Login com e-mail ou senha incorretos. */

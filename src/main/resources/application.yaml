@@ -21,6 +21,27 @@ app:
     email: ${ADMIN_EMAIL:}
     username: ${ADMIN_USERNAME:admin}
     password: ${ADMIN_PASSWORD:}
+  # Verificacao periodica de online/offline dos cards (resultado fica em memoria)
+  status:
+    interval: ${STATUS_INTERVAL:30s}
+    timeout: ${STATUS_TIMEOUT:3s}
+    # Aceita certificados autoassinados, comuns em homelab
+    insecure-tls: ${STATUS_INSECURE_TLS:true}
+  # Avisos de queda/retorno no Discord. Sem webhook = desativado.
+  notify:
+    failure-threshold: ${NOTIFY_FAILURE_THRESHOLD:2}
+    discord:
+      webhook-url: ${DISCORD_WEBHOOK_URL:}
+      username: ${DISCORD_USERNAME:Homelab Hub}
+  # Downloads de musica pelo Downtify. Sem DOWNTIFY_URL o painel de musicas fica escondido.
+  downtify:
+    url: ${DOWNTIFY_URL:}
+    # Token de dispositivo do Downtify (dtfy_...). Vazio se o Downtify roda com DOWNTIFY_DISABLE_AUTH=true.
+    token: ${DOWNTIFY_TOKEN:}
+    # Playlists grandes demoram para resolver
+    timeout: ${DOWNTIFY_TIMEOUT:60s}
+    # De quanto em quanto tempo as playlists acompanhadas sao conferidas
+    sync-interval: ${DOWNTIFY_SYNC_INTERVAL:6h}
 
 security:
   secret-key: ${JWT_SECRET:chave-temporaria-para-desenvolvimento}

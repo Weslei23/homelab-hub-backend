@@ -3,6 +3,7 @@ package com.homelab.homepage.common.config;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -39,9 +40,11 @@ public class SecurityConfig
                         .requestMatchers( HttpMethod.POST, "/api/v1/auth/login" ).permitAll()
                         .requestMatchers( HttpMethod.POST, "/api/v1/auth/register" ).permitAll()
                         .requestMatchers( HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html" ).permitAll()
-                        .requestMatchers( HttpMethod.GET, "/api/catalog" ).hasAnyRole( "USER", "ADMIN" )
+                        .requestMatchers( HttpMethod.GET, "/api/catalog", "/api/status" ).hasAnyRole( "USER", "ADMIN" )
+                        .requestMatchers( HttpMethod.POST, "/api/status/test-notification" ).hasRole( "ADMIN" )
                         .requestMatchers( "/api/categories/**", "/api/cards/**" ).hasRole( "ADMIN" )
                         .requestMatchers( "/api/v1/users/**" ).hasRole( "ADMIN" )
+                        .requestMatchers( "/api/music/**" ).hasRole( "ADMIN" )
                         .anyRequest().authenticated() )
 
                 .exceptionHandling( exceptions -> exceptions
@@ -50,6 +53,20 @@ public class SecurityConfig
 
                 .addFilterBefore( securityFilter, UsernamePasswordAuthenticationFilter.class )
                 .build();
+    }
+
+    /**
+     * O SecurityFilter e um @Component, entao o Spring Boot tambem o registraria como filtro comum do
+     * servlet, rodando fora da cadeia do Spring Security. Como ele e um OncePerRequestFilter, se essa
+     * copia rodasse primeiro a de dentro da cadeia seria pulada e a autenticacao se perderia.
+     * Aqui ele fica so dentro da cadeia (addFilterBefore acima).
+     */
+    @Bean
+    public FilterRegistrationBean<SecurityFilter> securityFilterRegistration( SecurityFilter filter )
+    {
+        FilterRegistrationBean<SecurityFilter> registration = new FilterRegistrationBean<>( filter );
+        registration.setEnabled( false );
+        return registration;
     }
 
     @Bean
