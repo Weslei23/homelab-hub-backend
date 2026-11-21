@@ -54,8 +54,9 @@ public final class MusicDtos
      * @param configured  DOWNTIFY_URL definido
      * @param reachable   o Downtify respondeu agora
      * @param syncInterval intervalo da sincronizacao automatica (ex.: "6h")
+     * @param url         endereco do Downtify, para abrir a pagina dele (ex.: limpar a fila)
      */
-    public record MusicStatusResponse( boolean configured, boolean reachable, String version, String syncInterval )
+    public record MusicStatusResponse( boolean configured, boolean reachable, String version, String syncInterval, String url )
     {
     }
 }

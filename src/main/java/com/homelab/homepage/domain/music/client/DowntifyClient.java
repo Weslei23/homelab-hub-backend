@@ -55,6 +55,12 @@ public class DowntifyClient
         return !baseUrl.isEmpty();
     }
 
+    /** Endereco do Downtify (sem barra no final), para o painel oferecer um link. */
+    public String baseUrl()
+    {
+        return baseUrl;
+    }
+
     /** Versao do Downtify, ou vazio se ele nao responder. */
     public Optional<String> version()
     {
@@ -114,11 +120,6 @@ public class DowntifyClient
             result.forEach( jobs::add );
         }
         return jobs;
-    }
-
-    public void clearCompleted()
-    {
-        send( request( "/api/queue/completed" ).DELETE() );
     }
 
     // ---- utilitarios para ler os objetos "song" do Downtify ----
@@ -205,9 +206,14 @@ public class DowntifyClient
         }
 
         int status = response.statusCode();
-        if ( status == 401 || status == 403 )
+        if ( status == 401 )
         {
             throw new DowntifyException( "O Downtify recusou o acesso: confira o DOWNTIFY_TOKEN" );
+        }
+        if ( status == 403 )
+        {
+            // Token valido, mas o Downtify nao libera esta acao para apps (ex.: limpar a fila)
+            throw new DowntifyException( "O Downtify nao permite esta acao pelo dashboard; faca pela pagina do Downtify" );
         }
         if ( status == 404 )
         {

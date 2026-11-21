@@ -105,7 +105,6 @@ class SecurityConfigTest
                 Arguments.of( "POST /api/music/downloads", json( post( "/api/music/downloads" ),
                         "{\"url\":\"https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC\"}" ), 202 ),
                 Arguments.of( "GET /api/music/queue", get( "/api/music/queue" ), 200 ),
-                Arguments.of( "DELETE /api/music/queue/completed", delete( "/api/music/queue/completed" ), 204 ),
                 Arguments.of( "GET /api/music/playlists", get( "/api/music/playlists" ), 200 ),
                 Arguments.of( "POST /api/music/playlists", json( post( "/api/music/playlists" ),
                         "{\"url\":\"https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M\"}" ), 201 ),

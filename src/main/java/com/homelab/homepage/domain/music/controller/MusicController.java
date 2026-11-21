@@ -55,13 +55,6 @@ public class MusicController
         return musicService.queue();
     }
 
-    @DeleteMapping( "/queue/completed" )
-    @ResponseStatus( HttpStatus.NO_CONTENT )
-    public void clearCompleted()
-    {
-        musicService.clearCompletedQueue();
-    }
-
     @GetMapping( "/playlists" )
     public List<PlaylistResponse> listPlaylists()
     {

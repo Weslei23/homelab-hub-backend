@@ -226,15 +226,10 @@ class DowntifyClientTest
         }
 
         @Test
-        void limpaConcluidos()
+        void expoeOEnderecoSemBarraNoFinal()
         {
-            body.set( null );
-            code.set( 204 );
-
-            client().clearCompleted();
-
-            assertThat( last().method() ).isEqualTo( "DELETE" );
-            assertThat( last().path() ).isEqualTo( "/api/queue/completed" );
+            assertThat( new DowntifyClient( "http://192.168.3.182:8582/", "", Duration.ofSeconds( 1 ), JSON ).baseUrl() )
+                    .isEqualTo( "http://192.168.3.182:8582" );
         }
     }
 
@@ -244,7 +239,7 @@ class DowntifyClientTest
         @ParameterizedTest
         @CsvSource( {
                 "401, confira o DOWNTIFY_TOKEN",
-                "403, confira o DOWNTIFY_TOKEN",
+                "403, nao permite esta acao pelo dashboard",
                 "404, nao encontrou nada para esse link",
                 "500, respondeu HTTP 500",
                 "429, respondeu HTTP 429" } )

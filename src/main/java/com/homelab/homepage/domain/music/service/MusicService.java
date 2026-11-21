@@ -58,10 +58,10 @@ public class MusicService
     {
         if ( !downtify.isConfigured() )
         {
-            return new MusicStatusResponse( false, false, null, syncInterval );
+            return new MusicStatusResponse( false, false, null, syncInterval, null );
         }
         String version = downtify.version().orElse( null );
-        return new MusicStatusResponse( true, version != null, version, syncInterval );
+        return new MusicStatusResponse( true, version != null, version, syncInterval, downtify.baseUrl() );
     }
 
     // ---- download imediato ----
@@ -81,11 +81,6 @@ public class MusicService
     public List<QueueItemResponse> queue()
     {
         return downtify.queue().stream().map( MusicService::toQueueItem ).toList();
-    }
-
-    public void clearCompletedQueue()
-    {
-        downtify.clearCompleted();
     }
 
     // ---- playlists acompanhadas ----

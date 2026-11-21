@@ -64,6 +64,7 @@ class MusicServiceTest
         repository = mock( MusicPlaylistRepository.class );
         notifier = mock( DiscordNotifier.class );
         when( downtify.isConfigured() ).thenReturn( true );
+        when( downtify.baseUrl() ).thenReturn( "http://192.168.3.182:8582" );
         when( repository.save( any( MusicPlaylist.class ) ) ).thenAnswer( inv -> {
             MusicPlaylist playlist = inv.getArgument( 0 );
             if ( playlist.getId() == null )
@@ -109,7 +110,7 @@ class MusicServiceTest
         {
             when( downtify.isConfigured() ).thenReturn( false );
 
-            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( false, false, null, "6h" ) );
+            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( false, false, null, "6h", null ) );
             verify( downtify, never() ).version();
         }
 
@@ -118,7 +119,7 @@ class MusicServiceTest
         {
             when( downtify.version() ).thenReturn( Optional.of( "3.12.0" ) );
 
-            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( true, true, "3.12.0", "6h" ) );
+            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( true, true, "3.12.0", "6h", "http://192.168.3.182:8582" ) );
         }
 
         @Test
@@ -126,7 +127,7 @@ class MusicServiceTest
         {
             when( downtify.version() ).thenReturn( Optional.empty() );
 
-            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( true, false, null, "6h" ) );
+            assertThat( service.status() ).isEqualTo( new MusicStatusResponse( true, false, null, "6h", "http://192.168.3.182:8582" ) );
         }
     }
 
@@ -225,13 +226,6 @@ class MusicServiceTest
             assertThat( service.queue() ).containsExactly( new QueueItemResponse( null, null, "error", null, null ) );
         }
 
-        @Test
-        void limparConcluidos()
-        {
-            service.clearCompletedQueue();
-
-            verify( downtify ).clearCompleted();
-        }
     }
 
     @Nested

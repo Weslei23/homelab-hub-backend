@@ -62,14 +62,15 @@ class MusicControllerTest
     @Test
     void statusDoDowntify() throws Exception
     {
-        when( musicService.status() ).thenReturn( new MusicStatusResponse( true, true, "3.12.0", "6h" ) );
+        when( musicService.status() ).thenReturn( new MusicStatusResponse( true, true, "3.12.0", "6h", "http://192.168.3.182:8582" ) );
 
         mvc.perform( get( "/api/music/status" ) )
                 .andExpect( status().isOk() )
                 .andExpect( jsonPath( "$.configured" ).value( true ) )
                 .andExpect( jsonPath( "$.reachable" ).value( true ) )
                 .andExpect( jsonPath( "$.version" ).value( "3.12.0" ) )
-                .andExpect( jsonPath( "$.syncInterval" ).value( "6h" ) );
+                .andExpect( jsonPath( "$.syncInterval" ).value( "6h" ) )
+                .andExpect( jsonPath( "$.url" ).value( "http://192.168.3.182:8582" ) );
     }
 
     @Test
@@ -121,14 +122,6 @@ class MusicControllerTest
                 .andExpect( status().isOk() )
                 .andExpect( jsonPath( "$[0].title" ).value( "Get Lucky" ) )
                 .andExpect( jsonPath( "$[0].progress" ).value( 42.5 ) );
-    }
-
-    @Test
-    void limparConcluidos() throws Exception
-    {
-        mvc.perform( delete( "/api/music/queue/completed" ) ).andExpect( status().isNoContent() );
-
-        verify( musicService ).clearCompletedQueue();
     }
 
     @Test

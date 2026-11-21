@@ -123,7 +123,8 @@ Comportamentos a saber:
 |---|---|---|
 | O painel não aparece | `DOWNTIFY_URL` vazio, ou usuário não é ADMIN | Defina a variável e refaça o deploy |
 | Selo **Downtify indisponível** | O container do backend não alcança o Downtify | Teste de dentro do container: `docker compose -p homepage -f compose.prod.yaml exec backend bash -c 'echo > /dev/tcp/192.168.3.146/8582 && echo ok'` |
-| "O Downtify recusou o acesso: confira o DOWNTIFY_TOKEN" | Token errado, expirado ou o dispositivo foi desvinculado no Downtify | Gere outro token (passo 1) |
+| "O Downtify recusou o acesso: confira o DOWNTIFY_TOKEN" (HTTP 401) | Token errado, expirado ou o dispositivo foi desvinculado no Downtify | Gere outro token (passo 1) |
+| "O Downtify não permite esta ação pelo dashboard" (HTTP 403) | O token é válido, mas o Downtify só libera essa ação com login na página dele | Faça pela página do Downtify (link **Abrir no Downtify ↗**) |
 | "O Downtify respondeu HTTP 404" em tudo | Downtify 2.x ou anterior (outra API) | Atualize para a imagem `ghcr.io/henriquesebastiao/downtify:3` |
 | "O Downtify não encontrou nada para esse link" | Playlist privada ou link quebrado | Deixe a playlist pública no Spotify |
 
@@ -135,16 +136,17 @@ Rotas do dashboard (todas exigem ADMIN):
 
 | Método | Rota | Resposta |
 |---|---|---|
-| GET | `/api/music/status` | `{ configured, reachable, version, syncInterval }` |
+| GET | `/api/music/status` | `{ configured, reachable, version, syncInterval, url }` |
 | POST | `/api/music/downloads` `{ url }` | 202 `{ queued, type }` |
 | GET | `/api/music/queue` | `[{ title, artists, status, progress, message }]` |
-| DELETE | `/api/music/queue/completed` | 204 |
 | GET / POST | `/api/music/playlists` (`{ url, name? }`) | lista / 201 com a playlist já sincronizada |
 | PUT | `/api/music/playlists/{id}` `{ enabled }` | playlist |
 | DELETE | `/api/music/playlists/{id}` | 204 |
 | POST | `/api/music/playlists/{id}/sync` | playlist com o resultado |
 
-Rotas do Downtify usadas pelo backend: `GET /api/health`, `GET /api/song/url`, `POST /api/download/batch`, `GET /api/queue`, `DELETE /api/queue/completed`.
+Rotas do Downtify usadas pelo backend: `GET /api/health`, `GET /api/song/url`, `POST /api/download/batch`, `GET /api/queue`.
+
+> O Downtify 3.13 **não deixa tokens de dispositivo limparem a fila** (`DELETE /api/queue/completed` responde 403 para o token, mas funciona com login na página dele). Por isso o painel tem o link **Abrir no Downtify ↗** em vez de um botão de limpar.
 
 Tabelas criadas automaticamente (`ddl-auto: update`): `music_playlist` e `music_playlist_song` (as faixas já enviadas de cada playlist).
 
