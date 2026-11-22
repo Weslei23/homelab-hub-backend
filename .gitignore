@@ -6,3 +6,8 @@ target/
 
 ### Segredos locais (ex.: DISCORD_WEBHOOK_URL) ###
 .env
+
+### Documentacao local (fica so nesta maquina, fora do git) ###
+/README.md
+/docs/
+/Documentação do Homepage Backend.md
