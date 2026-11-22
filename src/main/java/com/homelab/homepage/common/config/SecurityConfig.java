@@ -45,6 +45,9 @@ public class SecurityConfig
                         .requestMatchers( "/api/categories/**", "/api/cards/**" ).hasRole( "ADMIN" )
                         .requestMatchers( "/api/v1/users/**" ).hasRole( "ADMIN" )
                         .requestMatchers( "/api/music/**" ).hasRole( "ADMIN" )
+                        // Painel de filmes/series: todos veem; buscar e pedir titulos so ADMIN
+                        .requestMatchers( HttpMethod.GET, "/api/media/overview" ).hasAnyRole( "USER", "ADMIN" )
+                        .requestMatchers( "/api/media/**" ).hasRole( "ADMIN" )
                         .anyRequest().authenticated() )
 
                 .exceptionHandling( exceptions -> exceptions

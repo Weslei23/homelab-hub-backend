@@ -1,5 +1,6 @@
 package com.homelab.homepage.common.exceptions;
 
+import com.homelab.homepage.domain.media.client.MediaException;
 import com.homelab.homepage.domain.music.client.DowntifyException;
 
 import java.util.Map;
@@ -8,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -48,6 +50,21 @@ public class GlobalExceptionHandler
     public ResponseEntity<Map<String, String>> handleDowntify( DowntifyException exception )
     {
         return ResponseEntity.status( HttpStatus.BAD_GATEWAY ).body( Map.of( "message", exception.getMessage() ) );
+    }
+
+    /** Falha no Sonarr, Radarr ou Jellyfin. */
+    @ExceptionHandler( MediaException.class )
+    public ResponseEntity<Map<String, String>> handleMedia( MediaException exception )
+    {
+        return ResponseEntity.status( HttpStatus.BAD_GATEWAY ).body( Map.of( "message", exception.getMessage() ) );
+    }
+
+    /** Parametro obrigatorio ausente na URL (ex.: ?term= na busca). */
+    @ExceptionHandler( MissingServletRequestParameterException.class )
+    public ResponseEntity<Map<String, String>> handleMissingParameter( MissingServletRequestParameterException exception )
+    {
+        return ResponseEntity.status( HttpStatus.BAD_REQUEST )
+                .body( Map.of( "message", "Parametro obrigatorio ausente: " + exception.getParameterName() ) );
     }
 
     /** Login com e-mail ou senha incorretos. */

@@ -32,6 +32,12 @@ services:
       DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
       DOWNTIFY_URL: ${DOWNTIFY_URL:-}
       DOWNTIFY_TOKEN: ${DOWNTIFY_TOKEN:-}
+      SONARR_URL: ${SONARR_URL:-}
+      SONARR_API_KEY: ${SONARR_API_KEY:-}
+      RADARR_URL: ${RADARR_URL:-}
+      RADARR_API_KEY: ${RADARR_API_KEY:-}
+      JELLYFIN_URL: ${JELLYFIN_URL:-}
+      JELLYFIN_API_KEY: ${JELLYFIN_API_KEY:-}
     ports:
       # 8080 do host ja e usado pelo Jenkins
       - "${HOST_PORT:-8081}:8080"

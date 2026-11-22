@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.homelab.homepage.domain.catalog.service.CatalogService;
+import com.homelab.homepage.domain.media.service.MediaService;
 import com.homelab.homepage.domain.music.service.MusicService;
 import com.homelab.homepage.domain.status.notify.DiscordNotifier;
 import com.homelab.homepage.domain.status.service.StatusService;
@@ -67,6 +68,9 @@ class SecurityConfigTest
     private MusicService musicService;
 
     @MockitoBean
+    private MediaService mediaService;
+
+    @MockitoBean
     private TokenConfig tokenConfig;
 
     @MockitoBean
@@ -84,7 +88,8 @@ class SecurityConfigTest
     {
         return Stream.of(
                 Arguments.of( "GET /api/catalog", get( "/api/catalog" ), 200 ),
-                Arguments.of( "GET /api/status", get( "/api/status" ), 200 ) );
+                Arguments.of( "GET /api/status", get( "/api/status" ), 200 ),
+                Arguments.of( "GET /api/media/overview", get( "/api/media/overview" ), 200 ) );
     }
 
     /** Rotas exclusivas de ADMIN, com o status esperado quando o ADMIN chama. */
@@ -110,7 +115,10 @@ class SecurityConfigTest
                         "{\"url\":\"https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M\"}" ), 201 ),
                 Arguments.of( "PUT /api/music/playlists/1", json( put( "/api/music/playlists/1" ), "{\"enabled\":false}" ), 200 ),
                 Arguments.of( "DELETE /api/music/playlists/1", delete( "/api/music/playlists/1" ), 204 ),
-                Arguments.of( "POST /api/music/playlists/1/sync", post( "/api/music/playlists/1/sync" ), 200 ) );
+                Arguments.of( "POST /api/music/playlists/1/sync", post( "/api/music/playlists/1/sync" ), 200 ),
+                Arguments.of( "GET /api/media/search", get( "/api/media/search?type=movie&term=Duna" ), 200 ),
+                Arguments.of( "POST /api/media/requests", json( post( "/api/media/requests" ),
+                        "{\"type\":\"movie\",\"id\":438631}" ), 201 ) );
     }
 
     static Stream<Arguments> todasProtegidas()

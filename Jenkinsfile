@@ -18,6 +18,10 @@ pipeline {
         ADMIN_EMAIL = 'sschmittweslei@gmail.com'
         // Downtify 3.x (downloads de musica) no ZimaOS. O token vem da credencial abaixo
         DOWNTIFY_URL = 'http://192.168.3.182:8582'
+        // Painel de filmes e series (ZimaOS). As API keys vem das credenciais abaixo
+        SONARR_URL   = 'http://192.168.3.182:8989'
+        RADARR_URL   = 'http://192.168.3.182:7878'
+        JELLYFIN_URL = 'http://192.168.3.182:8097'
         DOCKER_BUILDKIT = '1'
     }
 
@@ -43,7 +47,10 @@ pipeline {
                     string(credentialsId: 'homepage-jwt-secret',     variable: 'JWT_SECRET'),
                     string(credentialsId: 'homepage-admin-password', variable: 'ADMIN_PASSWORD'),
                     string(credentialsId: 'homepage-discord-webhook', variable: 'DISCORD_WEBHOOK_URL'),
-                    string(credentialsId: 'homepage-downtify-token',  variable: 'DOWNTIFY_TOKEN')
+                    string(credentialsId: 'homepage-downtify-token',  variable: 'DOWNTIFY_TOKEN'),
+                    string(credentialsId: 'homepage-sonarr-key',      variable: 'SONARR_API_KEY'),
+                    string(credentialsId: 'homepage-radarr-key',      variable: 'RADARR_API_KEY'),
+                    string(credentialsId: 'homepage-jellyfin-key',    variable: 'JELLYFIN_API_KEY')
                 ]) {
                     sh 'docker compose -f compose.prod.yaml up -d --remove-orphans'
                 }

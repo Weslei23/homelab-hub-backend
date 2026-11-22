@@ -43,6 +43,21 @@ app:
     timeout: ${DOWNTIFY_TIMEOUT:60s}
     # De quanto em quanto tempo as playlists acompanhadas sao conferidas
     sync-interval: ${DOWNTIFY_SYNC_INTERVAL:6h}
+  # Painel de filmes e series. Cada servico sem URL fica de fora; sem nenhum, o painel se esconde.
+  # As API keys ficam em Settings > General (Sonarr/Radarr) e Painel > Chaves de API (Jellyfin).
+  media:
+    timeout: ${MEDIA_TIMEOUT:15s}
+    # Perfil de qualidade usado nos pedidos (se nao existir, usa o primeiro do Sonarr/Radarr)
+    quality-profile: ${MEDIA_QUALITY_PROFILE:HD-1080p}
+    sonarr:
+      url: ${SONARR_URL:}
+      api-key: ${SONARR_API_KEY:}
+    radarr:
+      url: ${RADARR_URL:}
+      api-key: ${RADARR_API_KEY:}
+    jellyfin:
+      url: ${JELLYFIN_URL:}
+      api-key: ${JELLYFIN_API_KEY:}
 
 security:
   secret-key: ${JWT_SECRET:chave-temporaria-para-desenvolvimento}
