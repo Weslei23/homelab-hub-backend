@@ -114,6 +114,27 @@ public class MediaService
                 upcoming.stream().limit( UPCOMING_LIMIT ).toList(), player.recent(), player.nowPlaying(), errors );
     }
 
+    /** Mensagem mostrada a quem nao e ADMIN quando algum servico falha. */
+    static final String VIEWER_ERROR = "Algum servico de midia esta indisponivel no momento";
+
+    /**
+     * Versao do painel para quem nao e ADMIN: sem os enderecos do Sonarr/Radarr (paginas de administracao)
+     * e sem o detalhe das falhas, que expoe IPs e portas internas. O Jellyfin continua com link: e onde se assiste.
+     */
+    public static MediaOverview forViewer( MediaOverview overview )
+    {
+        Services s = overview.services();
+        Services hidden = new Services( withoutUrl( s.sonarr() ), withoutUrl( s.radarr() ), s.jellyfin() );
+        List<String> errors = overview.errors().isEmpty() ? List.of() : List.of( VIEWER_ERROR );
+        return new MediaOverview( hidden, overview.queue(), overview.upcoming(), overview.recent(), overview.nowPlaying(),
+                errors );
+    }
+
+    private static ServiceInfo withoutUrl( ServiceInfo info )
+    {
+        return new ServiceInfo( info.configured(), info.reachable(), info.version(), null );
+    }
+
     private Part arrPart( ArrClient client )
     {
         if ( !client.isConfigured() )

@@ -45,6 +45,21 @@ public class GlobalExceptionHandler
         return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( Map.of( "message", exception.getMessage() ) );
     }
 
+    @ExceptionHandler( ForbiddenException.class )
+    public ResponseEntity<Map<String, String>> handleForbidden( ForbiddenException exception )
+    {
+        return ResponseEntity.status( HttpStatus.FORBIDDEN ).body( Map.of( "message", exception.getMessage() ) );
+    }
+
+    /** Muitas tentativas de login: informa quando tentar de novo (cabecalho Retry-After). */
+    @ExceptionHandler( TooManyRequestsException.class )
+    public ResponseEntity<Map<String, String>> handleTooManyRequests( TooManyRequestsException exception )
+    {
+        return ResponseEntity.status( HttpStatus.TOO_MANY_REQUESTS )
+                .header( "Retry-After", String.valueOf( exception.getRetryAfterSeconds() ) )
+                .body( Map.of( "message", exception.getMessage() ) );
+    }
+
     /** Falha num servico externo (Downtify): o problema nao e do dashboard nem do pedido. */
     @ExceptionHandler( DowntifyException.class )
     public ResponseEntity<Map<String, String>> handleDowntify( DowntifyException exception )

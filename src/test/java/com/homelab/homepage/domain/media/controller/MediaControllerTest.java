@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -49,18 +51,52 @@ class MediaControllerTest
                 .build();
     }
 
-    @Test
-    void painel() throws Exception
+    private static final UsernamePasswordAuthenticationToken ADMIN = new UsernamePasswordAuthenticationToken( "ana", null,
+            List.of( new SimpleGrantedAuthority( "ROLE_ADMIN" ) ) );
+    private static final UsernamePasswordAuthenticationToken USER = new UsernamePasswordAuthenticationToken( "bia", null,
+            List.of( new SimpleGrantedAuthority( "ROLE_USER" ) ) );
+
+    private void overviewComFalha()
     {
         ServiceInfo online = new ServiceInfo( true, true, "4.0", "http://nas:8989" );
         when( mediaService.overview() ).thenReturn( new MediaOverview( new Services( online, ServiceInfo.notConfigured(), online ),
                 List.of( new QueueItem( "episode", "Reacher", "S03E05", "downloading", 42.5, "00:10:00", null ) ),
                 List.of( new UpcomingItem( "episode", "Lupin", "S04E01", Instant.parse( "2026-11-25T02:00:00Z" ), false ) ),
                 List.of(), List.of(), List.of( "Radarr fora" ) ) );
+    }
 
-        mvc.perform( get( "/api/media/overview" ) )
+    @Test
+    void usuarioComumNaoVeEnderecosNemDetalheDasFalhas() throws Exception
+    {
+        overviewComFalha();
+
+        mvc.perform( get( "/api/media/overview" ).principal( USER ) )
                 .andExpect( status().isOk() )
                 .andExpect( jsonPath( "$.services.sonarr.version" ).value( "4.0" ) )
+                .andExpect( jsonPath( "$.services.sonarr.url" ).doesNotExist() )
+                .andExpect( jsonPath( "$.services.jellyfin.url" ).value( "http://nas:8989" ) )
+                .andExpect( jsonPath( "$.queue[0].title" ).value( "Reacher" ) )
+                .andExpect( jsonPath( "$.errors[0]" ).value( "Algum servico de midia esta indisponivel no momento" ) );
+    }
+
+    @Test
+    void semLoginTambemRecebeAVersaoResumida() throws Exception
+    {
+        overviewComFalha();
+
+        mvc.perform( get( "/api/media/overview" ) )
+                .andExpect( jsonPath( "$.services.sonarr.url" ).doesNotExist() );
+    }
+
+    @Test
+    void painel() throws Exception
+    {
+        overviewComFalha();
+
+        mvc.perform( get( "/api/media/overview" ).principal( ADMIN ) )
+                .andExpect( status().isOk() )
+                .andExpect( jsonPath( "$.services.sonarr.version" ).value( "4.0" ) )
+                .andExpect( jsonPath( "$.services.sonarr.url" ).value( "http://nas:8989" ) )
                 .andExpect( jsonPath( "$.services.radarr.configured" ).value( false ) )
                 .andExpect( jsonPath( "$.queue[0].progress" ).value( 42.5 ) )
                 .andExpect( jsonPath( "$.upcoming[0].date" ).value( "2026-11-25T02:00:00Z" ) )

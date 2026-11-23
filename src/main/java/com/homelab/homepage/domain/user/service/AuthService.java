@@ -2,6 +2,7 @@ package com.homelab.homepage.domain.user.service;
 
 import com.homelab.homepage.common.config.TokenConfig;
 import com.homelab.homepage.common.exceptions.ConflictException;
+import com.homelab.homepage.common.exceptions.ForbiddenException;
 import com.homelab.homepage.domain.user.dto.request.LoginRequestDTO;
 import com.homelab.homepage.domain.user.dto.request.RegisterUserRequestDTO;
 import com.homelab.homepage.domain.user.dto.response.LoginResponseDTO;
@@ -11,6 +12,7 @@ import com.homelab.homepage.domain.user.model.Role;
 import com.homelab.homepage.domain.user.model.User;
 import com.homelab.homepage.domain.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,6 +33,15 @@ public class AuthService
 
     @Autowired
     private TokenConfig tokenConfig;
+
+    /** Cadastro publico ligado? Desligado por padrao: contas novas so com REGISTRATION_ENABLED=true. */
+    @Value( "${app.auth.registration-enabled:false}" )
+    private boolean registrationEnabled;
+
+    public boolean isRegistrationEnabled()
+    {
+        return registrationEnabled;
+    }
 
     /**
      * Login
@@ -56,6 +67,10 @@ public class AuthService
      */
     public RegisterUserResponseDTO register( RegisterUserRequestDTO registerUserRequestDTO )
     {
+        if ( !registrationEnabled )
+        {
+            throw new ForbiddenException( "Cadastro desativado. Peca uma conta ao administrador" );
+        }
         if ( userRepository.existsByEmail( registerUserRequestDTO.getEmail() ) )
         {
             throw new ConflictException( "E-mail ja cadastrado" );

@@ -7,6 +7,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,9 +20,11 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import com.homelab.homepage.common.config.TokenConfig;
 import com.homelab.homepage.common.exceptions.ConflictException;
+import com.homelab.homepage.common.exceptions.ForbiddenException;
 import com.homelab.homepage.domain.user.dto.request.LoginRequestDTO;
 import com.homelab.homepage.domain.user.dto.request.RegisterUserRequestDTO;
 import com.homelab.homepage.domain.user.dto.response.LoginResponseDTO;
@@ -105,6 +108,12 @@ class AuthServiceTest
     @Nested
     class Cadastro
     {
+        @BeforeEach
+        void cadastroLigado()
+        {
+            ReflectionTestUtils.setField( authService, "registrationEnabled", true );
+        }
+
         private RegisterUserRequestDTO request()
         {
             RegisterUserRequestDTO dto = new RegisterUserRequestDTO();
@@ -143,5 +152,24 @@ class AuthServiceTest
             verify( userRepository, never() ).save( any() );
             verify( passwordEncoder, never() ).encode( any() );
         }
+
+        @Test
+        void cadastroDesligadoRecusaAntesDeTudo()
+        {
+            ReflectionTestUtils.setField( authService, "registrationEnabled", false );
+
+            assertThat( authService.isRegistrationEnabled() ).isFalse();
+            assertThatThrownBy( () -> authService.register( request() ) )
+                    .isInstanceOf( ForbiddenException.class )
+                    .hasMessage( "Cadastro desativado. Peca uma conta ao administrador" );
+            verify( userRepository, never() ).existsByEmail( any() );
+            verify( userRepository, never() ).save( any() );
+        }
+    }
+
+    @Test
+    void cadastroVemDesligadoPorPadrao()
+    {
+        assertThat( authService.isRegistrationEnabled() ).isFalse();
     }
 }

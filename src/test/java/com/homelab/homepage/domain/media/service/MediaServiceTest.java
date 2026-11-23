@@ -35,6 +35,7 @@ import com.homelab.homepage.domain.media.dto.MediaDtos.MediaRequest;
 import com.homelab.homepage.domain.media.dto.MediaDtos.QueueItem;
 import com.homelab.homepage.domain.media.dto.MediaDtos.SearchResult;
 import com.homelab.homepage.domain.media.dto.MediaDtos.ServiceInfo;
+import com.homelab.homepage.domain.media.dto.MediaDtos.Services;
 import com.homelab.homepage.domain.media.dto.MediaDtos.UpcomingItem;
 
 import tools.jackson.databind.JsonNode;
@@ -194,6 +195,24 @@ class MediaServiceTest
             assertThat( upcoming.get( 1 ).detail() ).isEqualTo( "S01E01" );
             assertThat( upcoming.getLast().detail() ).isEqualTo( "S01E19" );
         }
+    }
+
+    @Test
+    void versaoParaQuemNaoEAdmin()
+    {
+        ServiceInfo arr = new ServiceInfo( true, true, "4.0", "http://nas:8989" );
+        ServiceInfo jf = new ServiceInfo( true, true, "10.11", "http://nas:8097" );
+        MediaOverview full = new MediaOverview( new Services( arr, ServiceInfo.notConfigured(), jf ), List.of(), List.of(),
+                List.of(), List.of(), List.of( "Sonarr indisponivel em http://nas:8989", "outro" ) );
+
+        MediaOverview viewer = MediaService.forViewer( full );
+
+        assertThat( viewer.services().sonarr() ).isEqualTo( new ServiceInfo( true, true, "4.0", null ) );
+        assertThat( viewer.services().radarr() ).isEqualTo( ServiceInfo.notConfigured() );
+        assertThat( viewer.services().jellyfin().url() ).isEqualTo( "http://nas:8097" );
+        assertThat( viewer.errors() ).containsExactly( MediaService.VIEWER_ERROR );
+        assertThat( MediaService.forViewer( new MediaOverview( full.services(), List.of(), List.of(), List.of(), List.of(),
+                List.of() ) ).errors() ).isEmpty();
     }
 
     @Nested

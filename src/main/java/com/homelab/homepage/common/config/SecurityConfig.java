@@ -39,6 +39,7 @@ public class SecurityConfig
                         .dispatcherTypeMatchers( DispatcherType.ERROR ).permitAll()
                         .requestMatchers( HttpMethod.POST, "/api/v1/auth/login" ).permitAll()
                         .requestMatchers( HttpMethod.POST, "/api/v1/auth/register" ).permitAll()
+                        .requestMatchers( HttpMethod.GET, "/api/v1/auth/config" ).permitAll()
                         .requestMatchers( HttpMethod.GET, "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html" ).permitAll()
                         .requestMatchers( HttpMethod.GET, "/api/catalog", "/api/status" ).hasAnyRole( "USER", "ADMIN" )
                         .requestMatchers( HttpMethod.POST, "/api/status/test-notification" ).hasRole( "ADMIN" )

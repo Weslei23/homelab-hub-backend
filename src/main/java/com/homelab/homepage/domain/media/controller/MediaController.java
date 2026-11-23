@@ -5,6 +5,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,10 +35,18 @@ public class MediaController
         this.mediaService = mediaService;
     }
 
+    /** ADMIN ve tudo; USER nao ve enderecos internos nem o detalhe das falhas. */
     @GetMapping( "/overview" )
-    public MediaOverview overview()
+    public MediaOverview overview( Authentication authentication )
     {
-        return mediaService.overview();
+        MediaOverview overview = mediaService.overview();
+        return isAdmin( authentication ) ? overview : MediaService.forViewer( overview );
+    }
+
+    private static boolean isAdmin( Authentication authentication )
+    {
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch( a -> "ROLE_ADMIN".equals( a.getAuthority() ) );
     }
 
     @GetMapping( "/search" )

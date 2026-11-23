@@ -10,9 +10,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,6 +29,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import com.homelab.homepage.domain.catalog.service.CatalogService;
+import com.homelab.homepage.domain.media.dto.MediaDtos.MediaOverview;
+import com.homelab.homepage.domain.media.dto.MediaDtos.ServiceInfo;
+import com.homelab.homepage.domain.media.dto.MediaDtos.Services;
 import com.homelab.homepage.domain.media.service.MediaService;
 import com.homelab.homepage.domain.music.service.MusicService;
 import com.homelab.homepage.domain.status.notify.DiscordNotifier;
@@ -35,6 +40,7 @@ import com.homelab.homepage.domain.user.model.JWTUserData;
 import com.homelab.homepage.domain.user.model.Role;
 import com.homelab.homepage.domain.user.repository.UserRepository;
 import com.homelab.homepage.domain.user.service.AuthService;
+import com.homelab.homepage.domain.user.service.LoginAttemptService;
 import com.homelab.homepage.domain.user.service.UserService;
 import com.homelab.homepage.support.TestData;
 
@@ -71,10 +77,22 @@ class SecurityConfigTest
     private MediaService mediaService;
 
     @MockitoBean
+    private LoginAttemptService loginAttemptService;
+
+    @MockitoBean
     private TokenConfig tokenConfig;
 
     @MockitoBean
     private UserRepository userRepository;
+
+    /** O painel de midia precisa de um resultado (o controller o resume para quem nao e ADMIN). */
+    @BeforeEach
+    void emptyMediaOverview()
+    {
+        ServiceInfo none = ServiceInfo.notConfigured();
+        when( mediaService.overview() ).thenReturn(
+                new MediaOverview( new Services( none, none, none ), List.of(), List.of(), List.of(), List.of(), List.of() ) );
+    }
 
     private static final String CARD_JSON = "{\"name\":\"X\",\"url\":\"https://x\"}";
 
@@ -149,8 +167,14 @@ class SecurityConfigTest
         @Test
         void cadastroEPublico() throws Exception
         {
-            mvc.perform( json( post( "/api/v1/auth/register" ), "{\"username\":\"a\",\"email\":\"a@b.c\",\"password\":\"x\"}" ) )
+            mvc.perform( json( post( "/api/v1/auth/register" ), "{\"username\":\"ana\",\"email\":\"a@b.c\",\"password\":\"senha-forte\"}" ) )
                     .andExpect( status().isCreated() );
+        }
+
+        @Test
+        void configuracaoDoLoginEPublica() throws Exception
+        {
+            mvc.perform( get( "/api/v1/auth/config" ) ).andExpect( status().isOk() );
         }
 
         @Test
